@@ -8,9 +8,17 @@ check it with tests.
 > terminal and press **Enter**. To paste in Cloud Shell, use **Ctrl+V** (or **Cmd+V** on a Mac),
 > or right-click and choose **Paste**.
 
+## Prerequisites
+
+- A Google account that can open [Google Cloud Shell](https://shell.cloud.google.com).
+- Access to AGY with that account. Your facilitator will confirm this.
+- A desktop browser (Chrome recommended).
+
+You do **not** need a credit card, billing, a Cloud project, API keys or Docker.
+
 ## Quick start
 
-Already comfortable in a terminal? These are all the setup commands. Steps 3–8
+Already comfortable in a terminal? These are all the setup commands. Steps 2–8
 below walk through each one.
 
 **Terminal tab 1: app**
@@ -18,7 +26,6 @@ below walk through each one.
 ```bash
 git clone https://github.com/JohnsonChin1009/agy-cloud-shell-demo.git
 cd ~/agy-cloud-shell-demo
-node --version            # need v22.12+; if lower: nvm install 22 && nvm use 22
 npm ci
 npm run dev
 ```
@@ -29,8 +36,8 @@ Then open **Web preview → Change port → `5173` → Change and Preview**.
 
 ```bash
 cd ~/agy-cloud-shell-demo
-agy --version || { curl -fsSL https://antigravity.google/cli/install.sh | bash; export PATH="$HOME/.local/bin:$PATH"; }
 gcloud auth application-default login      # follow the link, paste the code back
+agy --version || { curl -fsSL https://antigravity.google/cli/install.sh | bash; export PATH="$HOME/.local/bin:$PATH"; }
 export AGY_ADC_AUTH=true
 agy
 ```
@@ -52,41 +59,19 @@ AGY to make it work:
 - If nothing matches, a friendly "no results" message appears.
 - Tests prove all of the above.
 
-## Step 2 · Prerequisites
-
-- A Google account that can open [Google Cloud Shell](https://shell.cloud.google.com).
-- Access to AGY with that account. Your facilitator will confirm this.
-- A desktop browser (Chrome recommended).
-
-You do **not** need a credit card, billing, a Cloud project, API keys or Docker.
-
-## Step 3 · Open Google Cloud Shell
+## Step 2 · Open Google Cloud Shell
 
 1. Go to **<https://shell.cloud.google.com>** and sign in.
 2. Wait for the terminal at the bottom to show a prompt that ends in `$`.
 
-## Step 4 · Clone the repository
+## Step 3 · Clone the repository
 
 ```bash
 git clone https://github.com/JohnsonChin1009/agy-cloud-shell-demo.git
 cd ~/agy-cloud-shell-demo
 ```
 
-## Step 5 · Install dependencies
-
-First check your Node.js version:
-
-```bash
-node --version
-```
-
-If it shows **v22.12 or higher**, skip ahead. Otherwise, install Node 22 (takes about 30 seconds):
-
-```bash
-nvm install 22 && nvm use 22
-```
-
-Then install the project's packages:
+## Step 4 · Install dependencies
 
 ```bash
 npm ci
@@ -94,7 +79,7 @@ npm ci
 
 `npm ci` installs the exact versions recorded in `package-lock.json`.
 
-## Step 6 · Start the development server
+## Step 5 · Start the development server
 
 ```bash
 npm run dev
@@ -103,7 +88,7 @@ npm run dev
 When you see `VITE ... ready` and `Local: http://localhost:5173/`, the app is running.
 **Leave this terminal tab running.**
 
-## Step 7 · Open Web Preview
+## Step 6 · Open Web Preview
 
 1. In the Cloud Shell toolbar, click the **Web preview** button. Hover over the
    toolbar icons to find it.
@@ -113,16 +98,25 @@ When you see `VITE ... ready` and `Local: http://localhost:5173/`, the app is ru
 A new browser tab opens with the dashboard. Type in the session search box and notice
 that **nothing filters yet**. That's the feature you're about to build.
 
-## Step 8 · Launch AGY in the project directory
+## Step 7 · Sign in with gcloud
+
+AGY's own browser login (the Google OAuth option) fails in Cloud Shell with
+`Error 400: invalid_request`. Sign in with your Cloud Shell Google credentials first.
 
 Open a **second terminal tab**: click the **+** (Open a new tab) next to the current tab
-in Cloud Shell. Then go to the project:
+in Cloud Shell. Then go to the project and sign in:
 
 ```bash
 cd ~/agy-cloud-shell-demo
+gcloud auth application-default login
 ```
 
-Check whether AGY is installed:
+Answer `Y` if asked to continue, open the link it prints, sign in with your Google
+account, then copy the verification code back into the terminal.
+
+## Step 8 · Launch AGY in the project directory
+
+Stay in the second tab. Check whether AGY is installed:
 
 ```bash
 agy --version
@@ -136,17 +130,7 @@ export PATH="$HOME/.local/bin:$PATH"
 agy --version
 ```
 
-Sign AGY in with your Cloud Shell Google credentials. AGY's own browser login
-(the Google OAuth option) fails in Cloud Shell with `Error 400: invalid_request`, so use this instead:
-
-```bash
-gcloud auth application-default login
-```
-
-Answer `Y` if asked to continue, open the link it prints, sign in with your Google
-account, then copy the verification code back into the terminal.
-
-Tell AGY to use those credentials, then start it **from inside the project folder**:
+Tell AGY to use the credentials from Step 7, then start it **from inside the project folder**:
 
 ```bash
 export AGY_ADC_AUTH=true
@@ -197,7 +181,6 @@ npm run build
 
 | Problem | Fix |
 | --- | --- |
-| `npm ci` errors about the Node version, or Vitest won't start | Run `nvm install 22 && nvm use 22`, then `npm ci` again. |
 | `Port 5173 is already in use` | Another dev server is already running. Find that terminal tab and press **Ctrl+C**, then run `npm run dev` again. |
 | Web Preview shows "Couldn't connect" or 502 | Make sure `npm run dev` is still running, and that you previewed port **5173**, not 8080. |
 | Web Preview says "Blocked request. This host is not allowed" | You've edited `vite.config.ts`. Run `git checkout vite.config.ts` and restart `npm run dev`. |
@@ -205,7 +188,7 @@ npm run build
 | `agy: command not found` after installing | Run `export PATH="$HOME/.local/bin:$PATH"`. |
 | AGY shows `Error 400: invalid_request` when signing in | That's the browser login, which doesn't work in Cloud Shell. Exit with **Ctrl+C**, run `gcloud auth application-default login`, then `export AGY_ADC_AUTH=true` and `agy`. |
 | AGY asks you to sign in again in a new terminal tab | `export` only applies to the current tab. Run `export AGY_ADC_AUTH=true` in that tab before `agy`. |
-| Cloud Shell disconnected | Reopen it. Your files stay in your home directory. Run `cd ~/agy-cloud-shell-demo` and start again from Step 6. |
+| Cloud Shell disconnected | Reopen it. Your files stay in your home directory. Run `cd ~/agy-cloud-shell-demo` and start again from Step 5. |
 | Want to start the challenge over | Run `git checkout -- src` to discard your changes to the app. |
 
 ## Step 12 · Cleanup

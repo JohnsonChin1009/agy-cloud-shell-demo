@@ -6,10 +6,10 @@ For workshop facilitators only. Attendees follow `README.md` and `workshop/CHALL
 
 | Time      | Activity                                                                 | README step |
 | --------- | ------------------------------------------------------------------------ | ----------- |
-| 0:00–2:00 | Intro: what AGY is, and what we'll build. Show the finished result.      | 1–2         |
-| 2:00–6:00 | Open Cloud Shell, clone, check Node, `npm ci`, `npm run dev`             | 3–6         |
-| 6:00–8:00 | Web Preview on port 5173. Show that search doesn't work yet.             | 7           |
-| 8:00–10:00| Second tab, install or check AGY, `agy`, sign in                         | 8           |
+| 0:00–2:00 | Intro: what AGY is, and what we'll build. Show the finished result.      | Prerequisites, 1 |
+| 2:00–6:00 | Open Cloud Shell, clone, `npm ci`, `npm run dev`                         | 2–5         |
+| 6:00–8:00 | Web Preview on port 5173. Show that search doesn't work yet.             | 6           |
+| 8:00–10:00| Second tab, `gcloud auth application-default login`, install or check AGY, `agy` | 7–8 |
 | 10:00–17:00 | Paste the challenge prompt, watch AGY work, verify in the browser     | 9           |
 | 17:00–19:00 | `npm test` and walk through AGY's summary                              | 10          |
 | 19:00–20:00 | Wrap-up and cleanup                                                    | 12          |
@@ -67,12 +67,11 @@ behavior and passing tests.
 
 | Symptom | Likely cause | Recovery |
 | --- | --- | --- |
-| `npm ci` warns `EBADENGINE`, or Vitest fails to start | Node older than 22.12 | `nvm install 22 && nvm use 22 && npm ci` |
 | Web Preview shows 502 or "Couldn't connect" | Dev server stopped, or previewing port 8080 | Restart `npm run dev`, then Web preview → Change port → 5173 |
 | "Blocked request. This host is not allowed" | `allowedHosts` was removed from `vite.config.ts` | `git checkout vite.config.ts`, then restart the dev server |
 | `Port 5173 is already in use` | A second `npm run dev` | Press Ctrl+C in the old tab. The port is fixed (`strictPort`) on purpose, so Web Preview instructions stay valid. |
 | `agy: command not found` | `~/.local/bin` not on PATH | `export PATH="$HOME/.local/bin:$PATH"` |
-| `Error 400: invalid_request` on AGY sign-in | Attendee used AGY's browser OAuth login, which Cloud Shell rejects | `gcloud auth application-default login`, then `export AGY_ADC_AUTH=true`, then `agy` (README Step 8) |
+| `Error 400: invalid_request` on AGY sign-in | Attendee used AGY's browser OAuth login, which Cloud Shell rejects | `gcloud auth application-default login`, then `export AGY_ADC_AUTH=true`, then `agy` (README Steps 7–8) |
 | AGY sign-in still fails with ADC | Account lacks AGY access, or `AGY_ADC_AUTH` not exported in this tab | Re-export in the current tab and retry, then fall back (below) |
 | AGY edits but tests fail | Agent stopped early | Paste: *"Run `npm test`, fix the failures, and summarize."* |
 | AGY applied `workshop/reference-solution.patch` | Agent ignored `AGENTS.md` | Run `git checkout -- src` and re-prompt. Point out that agents can read anything in the repo. |
@@ -97,7 +96,6 @@ Rehearse the fallback demo beforehand, on a fresh clone with AGY already signed 
 
 On a fresh clone, ideally in Cloud Shell with a non-facilitator account:
 
-- [ ] `node --version` in Cloud Shell. Note whether the `nvm install 22` step is needed.
 - [ ] `npm ci` completes, and `npm audit` shows no vulnerabilities.
 - [ ] `npm test` shows all tests passing with 4 todo.
 - [ ] `npm run build` succeeds.
@@ -107,4 +105,4 @@ On a fresh clone, ideally in Cloud Shell with a non-facilitator account:
 - [ ] `agy --version` works after the install step. `gcloud auth application-default login` + `export AGY_ADC_AUTH=true` + `agy` signs in with a workshop-type account.
 - [ ] The challenge prompt completes in AGY in about 5–7 minutes, and `npm test` then passes with 0 todo.
 - [ ] `git apply --check workshop/reference-solution.patch` succeeds on a clean checkout.
-- [ ] The clone URL in `README.md` Step 4 points to the published repository.
+- [ ] The clone URL in `README.md` Step 3 and Quick start point to the published repository.
