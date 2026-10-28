@@ -1,0 +1,187 @@
+diff --git a/src/components/SessionList.test.tsx b/src/components/SessionList.test.tsx
+index 975b2e2..bf12b4b 100644
+--- a/src/components/SessionList.test.tsx
++++ b/src/components/SessionList.test.tsx
+@@ -1,13 +1,17 @@
+ import { render, screen, within } from '@testing-library/react';
++import userEvent from '@testing-library/user-event';
+ import { SessionList } from './SessionList';
+ import { sessions } from '../data/event';
+ 
++function getSessionItems() {
++  return within(screen.getByRole('list', { name: 'Sessions' })).getAllByRole('listitem');
++}
++
+ describe('SessionList', () => {
+   it('renders every session with its speaker', () => {
+     render(<SessionList sessions={sessions} />);
+ 
+-    const list = screen.getByRole('list', { name: 'Sessions' });
+-    expect(within(list).getAllByRole('listitem')).toHaveLength(sessions.length);
++    expect(getSessionItems()).toHaveLength(sessions.length);
+     expect(screen.getByText('Pairing with Coding Agents in the Terminal')).toBeInTheDocument();
+     expect(screen.getByText(/Daniel Reyes/)).toBeInTheDocument();
+   });
+@@ -18,5 +22,33 @@ describe('SessionList', () => {
+     expect(screen.getByRole('searchbox', { name: 'Search sessions' })).toBeInTheDocument();
+   });
+ 
+-  // TODO(workshop): add UI tests for searching, case-insensitive matching and the empty state.
++  it('filters sessions by title as the user types', async () => {
++    const user = userEvent.setup();
++    render(<SessionList sessions={sessions} />);
++
++    await user.type(screen.getByRole('searchbox', { name: 'Search sessions' }), 'migrations');
++
++    expect(getSessionItems()).toHaveLength(1);
++    expect(screen.getByText('Zero-Downtime Database Migrations')).toBeInTheDocument();
++  });
++
++  it('filters sessions by speaker, ignoring case', async () => {
++    const user = userEvent.setup();
++    render(<SessionList sessions={sessions} />);
++
++    await user.type(screen.getByRole('searchbox', { name: 'Search sessions' }), 'HANA');
++
++    expect(getSessionItems()).toHaveLength(1);
++    expect(screen.getByText('Testing React Components Without the Pain')).toBeInTheDocument();
++  });
++
++  it('shows an empty state when no sessions match', async () => {
++    const user = userEvent.setup();
++    render(<SessionList sessions={sessions} />);
++
++    await user.type(screen.getByRole('searchbox', { name: 'Search sessions' }), 'kubernetes');
++
++    expect(screen.queryByRole('list', { name: 'Sessions' })).not.toBeInTheDocument();
++    expect(screen.getByText(/No sessions match/)).toBeInTheDocument();
++  });
+ });
+diff --git a/src/components/SessionList.tsx b/src/components/SessionList.tsx
+index b00105e..2d1ab71 100644
+--- a/src/components/SessionList.tsx
++++ b/src/components/SessionList.tsx
+@@ -4,7 +4,6 @@ import { filterSessions } from '../lib/filterSessions';
+ 
+ export function SessionList({ sessions }: { sessions: Session[] }) {
+   const [query, setQuery] = useState('');
+-  // WORKSHOP CHALLENGE: filterSessions is not implemented yet, so this is always the full list.
+   const visibleSessions = filterSessions(sessions, query);
+ 
+   return (
+@@ -31,24 +30,30 @@ export function SessionList({ sessions }: { sessions: Session[] }) {
+         </div>
+       </div>
+ 
+-      {/* TODO(workshop): when no sessions match the query, show a helpful empty state instead of an empty list. */}
+-      <ul className="divide-y divide-zinc-100" aria-label="Sessions">
+-        {visibleSessions.map((session) => (
+-          <li key={session.id} className="flex gap-4 p-4">
+-            <div className="w-14 shrink-0 font-mono text-sm text-zinc-500 tabular-nums">{session.startTime}</div>
+-            <div className="min-w-0 flex-1">
+-              <h3 className="text-sm font-medium">{session.title}</h3>
+-              <p className="mt-0.5 text-sm text-zinc-600">
+-                {session.speaker} · {session.room} · {session.durationMinutes} min
+-              </p>
+-            </div>
+-            <div className="hidden shrink-0 flex-col items-end gap-1 sm:flex">
+-              <span className="rounded border border-zinc-200 px-1.5 py-0.5 text-xs text-zinc-700">{session.track}</span>
+-              <span className="text-xs text-zinc-500">{session.level}</span>
+-            </div>
+-          </li>
+-        ))}
+-      </ul>
++      {visibleSessions.length === 0 ? (
++        <div className="px-4 py-10 text-center" role="status">
++          <p className="text-sm font-medium">No sessions match “{query.trim()}”</p>
++          <p className="mt-1 text-sm text-zinc-500">Try a different session title or speaker name.</p>
++        </div>
++      ) : (
++        <ul className="divide-y divide-zinc-100" aria-label="Sessions">
++          {visibleSessions.map((session) => (
++            <li key={session.id} className="flex gap-4 p-4">
++              <div className="w-14 shrink-0 font-mono text-sm text-zinc-500 tabular-nums">{session.startTime}</div>
++              <div className="min-w-0 flex-1">
++                <h3 className="text-sm font-medium">{session.title}</h3>
++                <p className="mt-0.5 text-sm text-zinc-600">
++                  {session.speaker} · {session.room} · {session.durationMinutes} min
++                </p>
++              </div>
++              <div className="hidden shrink-0 flex-col items-end gap-1 sm:flex">
++                <span className="rounded border border-zinc-200 px-1.5 py-0.5 text-xs text-zinc-700">{session.track}</span>
++                <span className="text-xs text-zinc-500">{session.level}</span>
++              </div>
++            </li>
++          ))}
++        </ul>
++      )}
+     </section>
+   );
+ }
+diff --git a/src/lib/filterSessions.test.ts b/src/lib/filterSessions.test.ts
+index 1764b65..d2c844a 100644
+--- a/src/lib/filterSessions.test.ts
++++ b/src/lib/filterSessions.test.ts
+@@ -6,9 +6,26 @@ describe('filterSessions', () => {
+     expect(filterSessions(sessions, '')).toEqual(sessions);
+   });
+ 
+-  // TODO(workshop): replace these placeholders with real tests.
+-  it.todo('matches sessions by title');
+-  it.todo('matches sessions by speaker name');
+-  it.todo('ignores letter case');
+-  it.todo('returns an empty list when nothing matches');
++  it('returns every session for a whitespace-only query', () => {
++    expect(filterSessions(sessions, '   ')).toEqual(sessions);
++  });
++
++  it('matches sessions by title', () => {
++    const titles = filterSessions(sessions, 'typescript').map((session) => session.title);
++    expect(titles).toEqual(['Type-Safe APIs with TypeScript']);
++  });
++
++  it('matches sessions by speaker name', () => {
++    const titles = filterSessions(sessions, 'Elena').map((session) => session.title);
++    expect(titles).toEqual(['Zero-Downtime Database Migrations']);
++  });
++
++  it('ignores letter case', () => {
++    expect(filterSessions(sessions, 'TESTING REACT')).toEqual(filterSessions(sessions, 'testing react'));
++    expect(filterSessions(sessions, 'daniel REYES')).toHaveLength(1);
++  });
++
++  it('returns an empty list when nothing matches', () => {
++    expect(filterSessions(sessions, 'kubernetes')).toEqual([]);
++  });
+ });
+diff --git a/src/lib/filterSessions.ts b/src/lib/filterSessions.ts
+index 91326dc..d37f325 100644
+--- a/src/lib/filterSessions.ts
++++ b/src/lib/filterSessions.ts
+@@ -3,15 +3,17 @@ import type { Session } from '../types';
+ /**
+  * Returns the sessions whose title or speaker name matches `query`.
+  *
+- * WORKSHOP CHALLENGE — see docs/PROJECT_SPEC.md, "Session search".
+- * Expected behavior:
+- *   - Match against session title OR speaker name.
+- *   - Case-insensitive.
+- *   - An empty or whitespace-only query returns every session.
+- *   - Preserve the original session order.
++ * - Match against session title OR speaker name.
++ * - Case-insensitive.
++ * - An empty or whitespace-only query returns every session.
++ * - Preserve the original session order.
+  */
+ export function filterSessions(sessions: Session[], query: string): Session[] {
+-  // TODO(workshop): implement filtering. Currently ignores the query.
+-  void query;
+-  return sessions;
++  const needle = query.trim().toLowerCase();
++  if (!needle) return sessions;
++
++  return sessions.filter(
++    (session) =>
++      session.title.toLowerCase().includes(needle) || session.speaker.toLowerCase().includes(needle),
++  );
+ }

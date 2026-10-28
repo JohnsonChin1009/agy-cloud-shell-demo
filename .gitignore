@@ -1,0 +1,14 @@
+node_modules/
+dist/
+coverage/
+*.log
+.vite/
+.DS_Store
+.env
+.env.*
+*.local
+.idea/
+.vscode/
+
+# Local workshop brief (not published)
+INSTRUCTIONS.md
