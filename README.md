@@ -30,6 +30,8 @@ Then open **Web preview → Change port → `5173` → Change and Preview**.
 ```bash
 cd ~/agy-cloud-shell-demo
 agy --version || { curl -fsSL https://antigravity.google/cli/install.sh | bash; export PATH="$HOME/.local/bin:$PATH"; }
+gcloud auth application-default login      # follow the link, paste the code back
+export AGY_ADC_AUTH=true
 agy
 ```
 
@@ -134,15 +136,24 @@ export PATH="$HOME/.local/bin:$PATH"
 agy --version
 ```
 
-Start AGY **from inside the project folder**:
+Sign AGY in with your Cloud Shell Google credentials. AGY's own browser login
+(the Google OAuth option) fails in Cloud Shell with `Error 400: invalid_request`, so use this instead:
 
 ```bash
+gcloud auth application-default login
+```
+
+Answer `Y` if asked to continue, open the link it prints, sign in with your Google
+account, then copy the verification code back into the terminal.
+
+Tell AGY to use those credentials, then start it **from inside the project folder**:
+
+```bash
+export AGY_ADC_AUTH=true
 agy
 ```
 
-On first launch, AGY asks you to sign in. Choose **Google OAuth**, open the link it shows,
-sign in, then copy the code back into the terminal. If AGY asks whether to trust this
-folder, say yes.
+If AGY asks whether to trust this folder, say yes.
 
 AGY automatically reads [`AGENTS.md`](AGENTS.md), which points it to the project spec in
 [`docs/PROJECT_SPEC.md`](docs/PROJECT_SPEC.md).
@@ -192,7 +203,8 @@ npm run build
 | Web Preview says "Blocked request. This host is not allowed" | You've edited `vite.config.ts`. Run `git checkout vite.config.ts` and restart `npm run dev`. |
 | Page doesn't update after AGY changes code | Refresh the Web Preview tab. |
 | `agy: command not found` after installing | Run `export PATH="$HOME/.local/bin:$PATH"`. |
-| AGY sign-in loops or fails | Exit AGY with **Ctrl+C**, run `agy` again and pick **Google OAuth**. Ask a facilitator if it keeps failing. |
+| AGY shows `Error 400: invalid_request` when signing in | That's the browser login, which doesn't work in Cloud Shell. Exit with **Ctrl+C**, run `gcloud auth application-default login`, then `export AGY_ADC_AUTH=true` and `agy`. |
+| AGY asks you to sign in again in a new terminal tab | `export` only applies to the current tab. Run `export AGY_ADC_AUTH=true` in that tab before `agy`. |
 | Cloud Shell disconnected | Reopen it. Your files stay in your home directory. Run `cd ~/agy-cloud-shell-demo` and start again from Step 6. |
 | Want to start the challenge over | Run `git checkout -- src` to discard your changes to the app. |
 

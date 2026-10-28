@@ -72,7 +72,8 @@ behavior and passing tests.
 | "Blocked request. This host is not allowed" | `allowedHosts` was removed from `vite.config.ts` | `git checkout vite.config.ts`, then restart the dev server |
 | `Port 5173 is already in use` | A second `npm run dev` | Press Ctrl+C in the old tab. The port is fixed (`strictPort`) on purpose, so Web Preview instructions stay valid. |
 | `agy: command not found` | `~/.local/bin` not on PATH | `export PATH="$HOME/.local/bin:$PATH"` |
-| AGY sign-in fails | Account lacks access, or OAuth was interrupted | Retry `agy`, then fall back (below) |
+| `Error 400: invalid_request` on AGY sign-in | Attendee used AGY's browser OAuth login, which Cloud Shell rejects | `gcloud auth application-default login`, then `export AGY_ADC_AUTH=true`, then `agy` (README Step 8) |
+| AGY sign-in still fails with ADC | Account lacks AGY access, or `AGY_ADC_AUTH` not exported in this tab | Re-export in the current tab and retry, then fall back (below) |
 | AGY edits but tests fail | Agent stopped early | Paste: *"Run `npm test`, fix the failures, and summarize."* |
 | AGY applied `workshop/reference-solution.patch` | Agent ignored `AGENTS.md` | Run `git checkout -- src` and re-prompt. Point out that agents can read anything in the repo. |
 | AGY adds a dependency or refactors other files | Over-eager agent | `git diff --stat`, `git checkout -- <file>` for the unrelated changes, then re-prompt with "keep it focused" |
@@ -103,7 +104,7 @@ On a fresh clone, ideally in Cloud Shell with a non-facilitator account:
 - [ ] `npm run dev` starts on port 5173. Web Preview → Change port → 5173 shows the dashboard.
 - [ ] Editing a file hot-reloads the Web Preview tab. (Not yet verified in Cloud Shell; if it doesn't, attendees refresh.)
 - [ ] Typing in the search box does **not** filter (starter is genuinely unfinished).
-- [ ] `agy --version` works after the install step. `agy` signs in with the workshop accounts.
+- [ ] `agy --version` works after the install step. `gcloud auth application-default login` + `export AGY_ADC_AUTH=true` + `agy` signs in with a workshop-type account.
 - [ ] The challenge prompt completes in AGY in about 5–7 minutes, and `npm test` then passes with 0 todo.
 - [ ] `git apply --check workshop/reference-solution.patch` succeeds on a clean checkout.
 - [ ] The clone URL in `README.md` Step 4 points to the published repository.
