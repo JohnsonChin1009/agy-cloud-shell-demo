@@ -4,17 +4,20 @@ For workshop facilitators only. Attendees follow `README.md` and `workshop/CHALL
 
 ## Suggested 20-minute schedule
 
-| Time      | Activity                                                                 | README step |
-| --------- | ------------------------------------------------------------------------ | ----------- |
-| 0:00–2:00 | Intro: what AGY is, and what we'll build. Show the finished result.      | Prerequisites, 1 |
-| 2:00–6:00 | Open Cloud Shell, clone, `npm ci`, `npm run dev`                         | 2–5         |
-| 6:00–8:00 | Web Preview on port 5173. Show that search doesn't work yet.             | 6           |
-| 8:00–10:00| Second tab, `gcloud auth application-default login`, install or check AGY, `agy` | 7–8 |
-| 10:00–17:00 | Paste the challenge prompt, watch AGY work, verify in the browser     | 9           |
+| Time        | Activity                                                               | README step |
+| ----------- | ---------------------------------------------------------------------- | ----------- |
+| 0:00–2:00   | Intro: what AGY is, and what we'll build. Show the finished result.    | 1           |
+| 2:00–5:00   | Claim credits and link them to a project. Note the project ID.         | Prerequisites |
+| 5:00–8:00   | Open Cloud Shell, clone, `npm ci`, `npm run dev`                       | 2–5         |
+| 8:00–9:00   | Web Preview on port 5173. Show that search doesn't work yet.           | 6           |
+| 9:00–11:00  | Second tab: `gcloud projects list`, `gcloud config set project`, `gcloud auth application-default login`, then install or check AGY, `export AGY_ADC_AUTH=true`, `agy` | 7–8 |
+| 11:00–17:00 | Paste the challenge prompt, watch AGY work, verify in the browser      | 9           |
 | 17:00–19:00 | `npm test` and walk through AGY's summary                              | 10          |
 | 19:00–20:00 | Wrap-up and cleanup                                                    | 12          |
 
-Setup (2:00–10:00) is the riskiest part. Ask attendees to run `npm ci` as early as
+Setup (2:00–11:00) is the riskiest part, and claiming credits is the least predictable.
+If you can, send the credit link and instructions **before** the session so attendees
+arrive with a billed project and their project ID. Ask attendees to run `npm ci` as early as
 possible, and install AGY while it runs if they can.
 
 ## Intended outcome
@@ -71,7 +74,10 @@ behavior and passing tests.
 | "Blocked request. This host is not allowed" | `allowedHosts` was removed from `vite.config.ts` | `git checkout vite.config.ts`, then restart the dev server |
 | `Port 5173 is already in use` | A second `npm run dev` | Press Ctrl+C in the old tab. The port is fixed (`strictPort`) on purpose, so Web Preview instructions stay valid. |
 | `agy: command not found` | `~/.local/bin` not on PATH | `export PATH="$HOME/.local/bin:$PATH"` |
-| `Error 400: invalid_request` on AGY sign-in | Attendee used AGY's browser OAuth login, which Cloud Shell rejects | `gcloud auth application-default login`, then `export AGY_ADC_AUTH=true`, then `agy` (README Steps 7–8) |
+| Credits claimed but project not in `gcloud projects list` | Cloud Shell is signed in with a different account, or the project wasn't created | Check `gcloud auth list`. Create the project and link the credit billing account in the Console. |
+| `Cannot find a quota project to add to ADC` after sign-in | `gcloud config set project` was skipped or ran after login | `gcloud auth application-default set-quota-project <PROJECT_ID>` |
+| AGY reports billing, quota or "API not enabled" | Billing not linked to the project, or wrong project set | Check billing in the Console, then `gcloud config set project <PROJECT_ID>` and sign in again |
+| `Error 400: invalid_request` on AGY sign-in | Attendee used AGY's browser OAuth login, which Cloud Shell rejects | Redo README Step 7, then `export AGY_ADC_AUTH=true` and `agy` |
 | AGY sign-in still fails with ADC | Account lacks AGY access, or `AGY_ADC_AUTH` not exported in this tab | Re-export in the current tab and retry, then fall back (below) |
 | AGY edits but tests fail | Agent stopped early | Paste: *"Run `npm test`, fix the failures, and summarize."* |
 | AGY applied `workshop/reference-solution.patch` | Agent ignored `AGENTS.md` | Run `git checkout -- src` and re-prompt. Point out that agents can read anything in the repo. |
@@ -102,7 +108,8 @@ On a fresh clone, ideally in Cloud Shell with a non-facilitator account:
 - [ ] `npm run dev` starts on port 5173. Web Preview → Change port → 5173 shows the dashboard.
 - [ ] Editing a file hot-reloads the Web Preview tab. (Not yet verified in Cloud Shell; if it doesn't, attendees refresh.)
 - [ ] Typing in the search box does **not** filter (starter is genuinely unfinished).
-- [ ] `agy --version` works after the install step. `gcloud auth application-default login` + `export AGY_ADC_AUTH=true` + `agy` signs in with a workshop-type account.
+- [ ] Claiming credits and linking them to a new project works with a fresh, attendee-type account. Time it.
+- [ ] `agy --version` works after the install step. `gcloud projects list` → `gcloud config set project` → `gcloud auth application-default login` (no quota-project warning) → `export AGY_ADC_AUTH=true` → `agy` signs in.
 - [ ] The challenge prompt completes in AGY in about 5–7 minutes, and `npm test` then passes with 0 todo.
 - [ ] `git apply --check workshop/reference-solution.patch` succeeds on a clean checkout.
 - [ ] The clone URL in `README.md` Step 3 and Quick start point to the published repository.

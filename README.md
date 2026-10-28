@@ -12,9 +12,12 @@ check it with tests.
 
 - A Google account that can open [Google Cloud Shell](https://shell.cloud.google.com).
 - Access to AGY with that account. Your facilitator will confirm this.
+- A **Google Cloud project with billing linked**. Your facilitator will show you how to
+  claim workshop credits and link them to a project at the start of the session.
+  Keep the **project ID** handy (for example `my-agy-workshop-123456`).
 - A desktop browser (Chrome recommended).
 
-You do **not** need a credit card, billing, a Cloud project, API keys or Docker.
+You do **not** need API keys, Docker or anything installed on your own computer.
 
 ## Quick start
 
@@ -36,6 +39,8 @@ Then open **Web preview → Change port → `5173` → Change and Preview**.
 
 ```bash
 cd ~/agy-cloud-shell-demo
+gcloud projects list                       # find your project ID
+gcloud config set project <PROJECT_ID>
 gcloud auth application-default login      # follow the link, paste the code back
 agy --version || { curl -fsSL https://antigravity.google/cli/install.sh | bash; export PATH="$HOME/.local/bin:$PATH"; }
 export AGY_ADC_AUTH=true
@@ -98,16 +103,34 @@ When you see `VITE ... ready` and `Local: http://localhost:5173/`, the app is ru
 A new browser tab opens with the dashboard. Type in the session search box and notice
 that **nothing filters yet**. That's the feature you're about to build.
 
-## Step 7 · Sign in with gcloud
+## Step 7 · Connect your Google Cloud project and sign in
 
-AGY's own browser login (the Google OAuth option) fails in Cloud Shell with
-`Error 400: invalid_request`. Sign in with your Cloud Shell Google credentials first.
+AGY uses your Google Cloud project (the one with your workshop credits). AGY's own
+browser login (the Google OAuth option) fails in Cloud Shell with `Error 400: invalid_request`,
+so you sign in with `gcloud` instead.
 
 Open a **second terminal tab**: click the **+** (Open a new tab) next to the current tab
-in Cloud Shell. Then go to the project and sign in:
+in Cloud Shell. Then go to the project folder:
 
 ```bash
 cd ~/agy-cloud-shell-demo
+```
+
+**1. Find your project ID.** It's in the `PROJECT_ID` column:
+
+```bash
+gcloud projects list
+```
+
+**2. Set it as your active project.** Replace `<PROJECT_ID>` with your ID, without the `< >`:
+
+```bash
+gcloud config set project <PROJECT_ID>
+```
+
+**3. Sign in:**
+
+```bash
 gcloud auth application-default login
 ```
 
@@ -130,7 +153,7 @@ export PATH="$HOME/.local/bin:$PATH"
 agy --version
 ```
 
-Tell AGY to use the credentials from Step 7, then start it **from inside the project folder**:
+Tell AGY to use your sign-in from Step 7, then start it **from inside the project folder**:
 
 ```bash
 export AGY_ADC_AUTH=true
@@ -186,7 +209,10 @@ npm run build
 | Web Preview says "Blocked request. This host is not allowed" | You've edited `vite.config.ts`. Run `git checkout vite.config.ts` and restart `npm run dev`. |
 | Page doesn't update after AGY changes code | Refresh the Web Preview tab. |
 | `agy: command not found` after installing | Run `export PATH="$HOME/.local/bin:$PATH"`. |
-| AGY shows `Error 400: invalid_request` when signing in | That's the browser login, which doesn't work in Cloud Shell. Exit with **Ctrl+C**, run `gcloud auth application-default login`, then `export AGY_ADC_AUTH=true` and `agy`. |
+| `gcloud projects list` shows nothing, or not your project | You may be signed in with a different Google account. Check with `gcloud auth list`, and confirm with your facilitator that your credits are linked to a project. |
+| Sign-in shows `Cannot find a quota project to add to ADC` | Run `gcloud auth application-default set-quota-project <PROJECT_ID>`, then continue with Step 8. |
+| AGY shows `Error 400: invalid_request` when signing in | That's the browser login, which doesn't work in Cloud Shell. Exit with **Ctrl+C** and redo Step 7, then `export AGY_ADC_AUTH=true` and `agy`. |
+| AGY reports a billing, quota or "API not enabled" error | Your project may not have billing linked. Check with your facilitator, then re-run `gcloud config set project <PROJECT_ID>`. |
 | AGY asks you to sign in again in a new terminal tab | `export` only applies to the current tab. Run `export AGY_ADC_AUTH=true` in that tab before `agy`. |
 | Cloud Shell disconnected | Reopen it. Your files stay in your home directory. Run `cd ~/agy-cloud-shell-demo` and start again from Step 5. |
 | Want to start the challenge over | Run `git checkout -- src` to discard your changes to the app. |
@@ -201,7 +227,13 @@ npm run build
 cd ~ && rm -rf ~/agy-cloud-shell-demo
 ```
 
-Nothing was created in Google Cloud, so there's nothing else to clean up or pay for.
+The app itself created nothing in Google Cloud. AGY's usage is charged to your project's
+credits. If you made a project just for this workshop and don't need it any more, you can
+shut it down, which also stops any further charges:
+
+```bash
+gcloud projects delete <PROJECT_ID>
+```
 
 ---
 
